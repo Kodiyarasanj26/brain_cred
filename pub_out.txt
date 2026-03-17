@@ -1,0 +1,29 @@
+﻿Resolving dependencies...
+flutter : The current Dart 
+SDK version is 3.9.0.
+At line:1 char:1
++ flutter pub get 2>&1 | 
+Out-File -Encoding utf8 
+pub_out.txt
++ ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (The cur  
+  rent Dart SDK version is   
+  3.9.0.:String) [], Remo    
+teException
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+
+Because brain_cred_app 
+requires SDK version 
+^3.10.1, version solving 
+failed.
+
+
+You can try the following 
+suggestion to make the 
+pubspec resolve:
+* Try using the Flutter SDK 
+version: 3.41.4. 
+Failed to update packages.
