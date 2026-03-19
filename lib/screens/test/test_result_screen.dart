@@ -10,7 +10,6 @@ import '../../../providers/auth_provider.dart';
 import '../../../providers/course_provider.dart';
 import '../../../core/widgets/app_loading.dart';
 import '../../../services/local_storage_service.dart';
-import '../../../services/certificate_pdf_service.dart';
 
 class TestResultScreen extends StatefulWidget {
   const TestResultScreen({
@@ -79,12 +78,13 @@ class _TestResultScreenState extends State<TestResultScreen> {
     // Reward credits for completing the course test (last lesson)
     final isLastLesson = widget.lessonIndex == course.lessons.length - 1;
     if (isLastLesson) {
-      await LocalStorageService.addWalletCredits(user.email, 30);
+      final earnedCredits = ((course.creditCost * 80) / 100).round(); // 80% of course credits
+      await LocalStorageService.addWalletCredits(user.email, earnedCredits);
       if (mounted) {
         context.read<AuthProvider>().refreshUser();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('You earned 30 credits for completing this course test!'),
+          SnackBar(
+            content: Text('You earned $earnedCredits credits for completing this course test!'),
             backgroundColor: AppTheme.success,
           ),
         );
@@ -191,26 +191,33 @@ class _TestResultScreenState extends State<TestResultScreen> {
                       : () async {
                           setState(() => _isDownloading = true);
                           await Future.delayed(kSimulatedShortDelay);
-                          final cert = _certificate ?? CertificateModel(
-                            id: const Uuid().v4(),
-                            userId: user.email,
-                            userEmail: user.email,
-                            userName: user.name,
-                            courseId: course.id,
-                            courseTitle: course.title,
-                            lessonTitle: lesson.title,
-                            scorePercent: score,
-                            grade: grade,
-                            issuedAt: DateTime.now(),
-                          );
-                          await CertificatePdfService.generateAndSave(cert);
                           if (!mounted) return;
+                          // Ensure the certificate is saved (and avoid duplicates) before opening preview.
+                          await _saveCertificateIfPassed();
+                          if (!mounted) return;
+                          final certs = LocalStorageService.getCertificates(user.email);
+                          final cert = certs.firstWhere(
+                            (c) =>
+                                c.courseId == course.id && c.lessonTitle == lesson.title,
+                            orElse: () => _certificate ??
+                                CertificateModel(
+                                  id: const Uuid().v4(),
+                                  userId: user.email,
+                                  userEmail: user.email,
+                                  userName: user.name,
+                                  courseId: course.id,
+                                  courseTitle: course.title,
+                                  lessonTitle: lesson.title,
+                                  scorePercent: score,
+                                  grade: grade,
+                                  issuedAt: DateTime.now(),
+                                ),
+                          );
+
                           setState(() => _isDownloading = false);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Certificate saved to device'),
-                              backgroundColor: AppTheme.success,
-                            ),
+                          context.push(
+                            '/certificate-preview',
+                            extra: cert,
                           );
                         },
                   icon: _isDownloading

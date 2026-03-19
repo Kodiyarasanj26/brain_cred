@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_loading.dart';
 import '../../../models/certificate_model.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../services/local_storage_service.dart';
-import '../../../services/certificate_pdf_service.dart';
 
 class MyCertificatesScreen extends StatefulWidget {
   const MyCertificatesScreen({super.key});
@@ -178,19 +178,12 @@ class _CertificateCard extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () async {
-                  await CertificatePdfService.generateAndSave(cert);
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Certificate saved to device'),
-                        backgroundColor: AppTheme.success,
-                      ),
-                    );
-                  }
-                },
+                onPressed: () => context.push(
+                  '/certificate-preview',
+                  extra: cert,
+                ),
                 icon: const Icon(Icons.download_rounded, size: 20),
-                label: const Text('Download PDF'),
+                label: const Text('Open Certificate (PDF)'),
               ),
             ),
           ],

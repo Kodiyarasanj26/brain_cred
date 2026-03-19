@@ -11,7 +11,9 @@ import '../../screens/test/test_screen.dart';
 import '../../screens/test/test_result_screen.dart';
 import '../../screens/profile/edit_profile_screen.dart';
 import '../../screens/profile/my_certificates_screen.dart';
+import '../../screens/profile/certificate_preview_screen.dart';
 import '../../screens/notifications/notifications_screen.dart';
+import '../../models/certificate_model.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -91,6 +93,13 @@ GoRouter createAppRouter(AuthProvider authProvider) {
       GoRoute(
         path: '/my-certificates',
         builder: (_, __) => const MyCertificatesScreen(),
+      ),
+      GoRoute(
+        path: '/certificate-preview',
+        builder: (context, state) {
+          final cert = state.extra as CertificateModel;
+          return CertificatePreviewScreen(cert: cert);
+        },
       ),
       GoRoute(
         path: '/notifications',
